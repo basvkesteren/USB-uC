@@ -48,6 +48,9 @@
 #elif defined(_18F27J53) || defined(_18F47J53)
 #define PROD_STR {'U','S','B',' ','u','C',' ','X','7','J','5','3'}
 #define NUM_PROD_STR_EL 12
+#elif defined(_18F26J50)
+#define PROD_STR {'U','S','B',' ','u','C',' ','2','6','J','5','0'}
+#define NUM_PROD_STR_EL 12
 #else
 #error "Descriptor Error: Part not supported"
 #endif

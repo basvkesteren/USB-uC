@@ -231,7 +231,7 @@
 #define BDT_BASE_ADDR   0x200
 #define SETUP_DATA_ADDR 0x60
 #define EP_BUFFERS_STARTING_ADDR (BDT_BASE_ADDR + BDT_SIZE)
-#elif defined(_18F24K50)||defined(_18F25K50)||defined(_18F45K50)
+#elif defined(_18F24K50)||defined(_18F25K50)||defined(_18F45K50)||defined(_18F26J50)
 #define BDT_BASE_ADDR   0x400
 #define SETUP_DATA_ADDR 0x60
 #define EP_BUFFERS_STARTING_ADDR (BDT_BASE_ADDR + BDT_SIZE)

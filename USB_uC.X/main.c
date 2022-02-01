@@ -183,7 +183,7 @@ static void inline boot_init(void)
     BUTTON_WPU |= (1 << BUTTON_WPU_BIT);
     INTCON2bits.nRBPU = 0;
     
-    #elif defined(_18F26J53) || defined(_18F27J53)
+    #elif defined(_18F26J53) || defined(_18F27J53) || defined(_18F26J50)
     LATB = 0;
     BUTTON_WPU |= (1 << BUTTON_WPU_BIT);
     BUTTON_RXPU_REG &= ~(1 << BUTTON_RXPU_BIT);
@@ -219,7 +219,7 @@ static void inline boot_uninit(void)
     WPUB = 0xFF;
     TRISE = 0xFF;
     
-    #elif defined(_18F26J53) || defined(_18F27J53)
+    #elif defined(_18F26J53) || defined(_18F27J53) || defined(_18F26J50)
     BUTTON_RXPU_REG |= (1 << BUTTON_RXPU_BIT);
     LATB = 0xFF;
     

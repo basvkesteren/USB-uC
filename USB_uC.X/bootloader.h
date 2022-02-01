@@ -135,6 +135,22 @@
     0x1FFFF |______________|
  */
 
+/* PIC18F26J50 ROM Space
+             ______________
+    0x00000 |____RESET_____|
+    0x00008 |____INT_HP____|
+    0x00018 |____INT_LP____| 0x2000 (8KB)
+            |              |
+            | BOOT LOADER  |
+    0x01FFF |______________|
+    0x02000 |              |
+            |  PROG MEM    | 0x0DC00 (55KB)
+    0x0FBFF |______________|
+    0x0FC00 |              |
+            | CONFIG WORDS | 0x400 (1KB)
+    0x0FFFF |______________|
+ */
+
 #include "config.h"
 
 // Memory Regions.
@@ -182,7 +198,7 @@
 // FLASH USER SPACE
 #define FILE_SIZE 0x6000 // In bytes
 
-#elif defined(_18F26J53) || defined(_18F46J53)
+#elif defined(_18F26J53) || defined(_18F46J53) || defined(_18F26J50)
 #define BOOT_REGION_START     0x00000
 #define PROG_REGION_START     0x02000
 #define CONFIG_BLOCK_REGION   0x0FFC0
@@ -279,6 +295,8 @@
 #define VOLUME_LABEL {'P','I','C','1','8','F','X','6','J','5','3'}
 #elif defined(_18F27J53) || defined(_18F47J53)
 #define VOLUME_LABEL {'P','I','C','1','8','F','X','7','J','5','3'}
+#elif defined(_18F26J50)
+#define VOLUME_LABEL {'P','I','C','1','8','F','2','6','J','5','0'}
 #endif
 
 #define ROOT_NAME VOLUME_LABEL

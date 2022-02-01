@@ -252,6 +252,75 @@
 #pragma config WPDIS = ON       // Write Protect Disable bit (WPFP<6:0>/WPEND region erase/write protected)
 #pragma config WPEND = PAGE_0   // Write/Erase Protect Region Select bit (valid when WPDIS = 0) (Pages 0 through WPFP<6:0> erase/write protected)
 #pragma config LS48MHZ = SYS48X8// Low Speed USB mode with 48 MHz system clock bit (System clock at 48 MHz USB CLKEN divide-by is set to 8)
+
+#elif defined(_18F26J50)
+
+// CONFIG1L
+#pragma config WDTEN = OFF      // Watchdog Timer (Disabled - Controlled by SWDTEN bit)
+
+#if XTAL_USED == MHz_4
+#pragma config PLLDIV = 1
+#elif XTAL_USED == MHz_8
+#pragma config PLLDIV = 2
+#elif XTAL_USED == MHz_12
+#pragma config PLLDIV = 3
+#elif XTAL_USED == MHz_16
+#pragma config PLLDIV = 4
+#elif XTAL_USED == MHz_20
+#pragma config PLLDIV = 5
+#elif XTAL_USED == MHz_24
+#pragma config PLLDIV = 6
+#elif XTAL_USED == MHz_40
+#pragma config PLLDIV = 10
+#elif XTAL_USED == MHz_48
+#pragma config PLLDIV = 12
+#elif (XTAL_USED == NO_XTAL)
+#pragma config PLLDIV = 2
+#else
+#error XTAL_USED has invalid paramater
+#endif
+
+#pragma config STVREN = ON      // Stack Overflow/Underflow Reset (Enabled)
+#pragma config XINST = OFF      // Extended Instruction Set (Disabled)
+
+// CONFIG1H
+#if (XTAL_USED == NO_XTAL)
+#pragma config CPUDIV = OSC2_PLL2
+#else
+#pragma config CPUDIV = OSC1    // CPU System Clock Postscaler (No CPU system clock divide)
+#endif
+#pragma config CP0 = OFF        // Code Protect (Program memory is not code-protected)
+
+// CONFIG2L
+#if (XTAL_USED == NO_XTAL)
+#pragma config OSC = INTOSCPLLO
+#else
+#pragma config OSC = HSPLL      // Oscillator (HS+PLL, USB-HS+PLL)
+#endif
+#pragma config FCMEN = OFF      // Fail-Safe Clock Monitor (Disabled)
+#pragma config IESO = OFF       // Internal External Oscillator Switch Over Mode (Disabled)
+
+// CONFIG2H
+#pragma config WDTPS = 2048      // Watchdog Postscaler (1:2048)
+
+// CONFIG3L
+#pragma config DSWDTOSC = INTOSCREF// DSWDT Clock Select (DSWDT uses INTRC)
+#pragma config RTCOSC = INTOSCREF// RTCC Clock Select (RTCC uses T1OSC/T1CKI)
+#pragma config DSBOREN = OFF    // Deep Sleep BOR (Disabled)
+#pragma config DSWDTEN = OFF    // Deep Sleep Watchdog Timer (Disabled)
+#pragma config DSWDTPS = G2     // Deep Sleep Watchdog Postscaler (1:2,147,483,648 (25.7 days))
+
+// CONFIG3H
+#pragma config IOL1WAY = OFF    // IOLOCK One-Way Set Enable bit (The IOLOCK bit (PPSCON<0>) can be set and cleared as needed)
+#pragma config MSSP7B_EN = MSK7 // MSSP address masking (7 Bit address masking mode)
+
+// CONFIG4L
+#pragma config WPFP = PAGE_7    // Write/Erase Protect Page Start/End Location (Write Protect Program Flash Page 7)
+#pragma config WPCFG = ON       // Write/Erase Protect Configuration Region  (Configuration Words page erase/write-protected)
+
+// CONFIG4H
+#pragma config WPDIS = ON       // Write Protect Disable bit (WPFP<6:0>/WPEND region erase/write protected)
+#pragma config WPEND = PAGE_0   // Write/Erase Protect Region Select bit (valid when WPDIS = 0) (Pages 0 through WPFP<6:0> erase/write protected)
 #endif
 
 #include <xc.h>

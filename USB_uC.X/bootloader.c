@@ -199,7 +199,7 @@ void boot_process_read(void)
             g_msd_ep_in[11] = 0x08;
             #if defined(_PIC14E)
             g_msd_ep_in[9] = get_device();
-            #elif !defined(_18F14K50) && !defined(_18F24K50)
+            #elif !defined(_18F14K50) && !defined(_18F24K50) && !defined(_18F26J50)
             g_msd_ep_in[6] = get_device();
             #endif
             #ifndef SIMPLE_BOOTLOADER
