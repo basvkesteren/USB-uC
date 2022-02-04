@@ -46,20 +46,48 @@ __asm("goto    "___mkstr(PROG_REGION_START + 0x18));
 static void inline boot_init(void);
 static void inline boot_uninit(void);
 static void check_user_first_inst(void);
+static char check_magic_value(void);
 
 bool user_firmware = false;
 
 static uint8_t m_delay_cnt = 0;
 
+/* 'special' location in RAM. Usercode can set this location to a specific value (0x1234) then reset.
+   Since it's volatile, bootcode won't touch it before we can read it. */
+volatile uint16_t usercode_bootloader_request __at(0x10);
+
 void main(void)
 {
+    unsigned int timeout = 0;
     boot_init();
     __delay_ms(50); // Incase of capacitance on boot pin.
     check_user_first_inst();
-    
-    if(BUTTON_PRESSED || (user_firmware == false))
+
+    /* Start bootloader if; button is pressed, user firmware is missing, usercode requested bootloader, watchdog triggered, or usercode lacks magic value */
+    if(BUTTON_PRESSED || (user_firmware == false) || usercode_bootloader_request == 0x1234 || RCONbits.TO == 0 || check_magic_value() == 0)
     {
-        while(BUTTON_PRESSED){}
+        usercode_bootloader_request = 0;
+
+        /* If user firmware exists, start a timeout timer */
+        if(user_firmware) {
+            #if defined(_18F26J50) // Other parts may or may not have this exact same timer, I haven't checked..
+            /* Using Fosc/4 as clock with an 1:2 prescaler means a timer-increment each 1.667uS @ 48MHz, 
+               30000 increments to get a 5ms interrupt-interval */
+            T1CONbits.RD16 = 1;         // Read/write timer as one 16 bits value
+            T1CONbits.T1CKPS1 = 0;      // Use a 1:2 prescaler
+            T1CONbits.T1CKPS0 = 1;
+            T1CONbits.T1OSCEN = 0;      // Disable timer1 oscillator
+            T1CONbits.TMR1CS0 = 0;      // Use instruction clock..
+            T1CONbits.TMR1CS1 = 0;      // ..as source
+            TMR1H = 35536>>8;
+            TMR1L = 35536&0xFF;         // Set counter; timer counts up, this value gives us 30000 increments before an interrupt
+            T1CONbits.TMR1ON = 1;       // Start timer
+            #endif
+        }
+
+        while(BUTTON_PRESSED){
+            CLRWDT();
+        }
         __delay_ms(20); // De-bounce.
         #ifdef USE_BOOT_LED
         LED_OUPUT();
@@ -73,6 +101,19 @@ void main(void)
             msd_tasks();
             if(g_boot_reset)   goto delayed_reset;
             if(BUTTON_PRESSED && user_firmware) goto button_reset;
+            #if defined(_18F26J50) // Other parts may or may not have this exact same timer, I haven't checked..
+            if(PIR1bits.TMR1IF) {
+                /* Bootloader timeout tick */
+                PIR1bits.TMR1IF = 0;
+                TMR1H = 35536>>8;
+                TMR1L = 35536&0xFF;
+                timeout++;
+                if(timeout >= 5 * 60 * 200) { // 5 minute timeout
+                    goto delayed_reset;
+                }
+            }
+            #endif
+            CLRWDT();
         }
     }
     
@@ -90,6 +131,7 @@ void main(void)
     {
         usb_tasks();
         msd_tasks();
+        CLRWDT();
     }
     
     // Ready to leave the bootloader.
@@ -148,6 +190,17 @@ static void inline boot_init(void)
 
     // PIC18F2XJ53 and PIC18F4XJ53.
     #elif defined(__J_PART)
+
+    #if XTAL_USED == NO_XTAL
+    /* Select 8MHz for the internal clock */
+    OSCCONbits.IRCF0 = 1;
+    OSCCONbits.IRCF1 = 1;
+    OSCCONbits.IRCF2 = 1;
+    /* Use primary clock source */
+    OSCCONbits.SCS0 = 0;
+    OSCCONbits.SCS1 = 0;
+    #endif
+
     OSCTUNEbits.PLLEN = 1;
     PLL_STARTUP_DELAY();
     #endif
@@ -187,6 +240,7 @@ static void inline boot_init(void)
     LATB = 0;
     BUTTON_WPU |= (1 << BUTTON_WPU_BIT);
     BUTTON_RXPU_REG &= ~(1 << BUTTON_RXPU_BIT);
+    INTCON2bits.RBPU = 0;
     
     #elif defined(_18F46J53) || defined(_18F47J53)
     LATB = 0;
@@ -195,6 +249,11 @@ static void inline boot_init(void)
     BUTTON_WPU |= (1 << BUTTON_WPU_BIT);
     BUTTON_RXPU_REG &= ~(1 << BUTTON_RXPU_BIT);
     #endif
+    #endif
+
+    #ifdef START_WATCHDOG
+    /* Enable watchdog */
+    WDTCONbits.SWDTEN = 1;
     #endif
 }
 
@@ -294,6 +353,30 @@ static void check_user_first_inst(void)
     
     if(*((uint16_t*)inst) == 0xFFFF) user_firmware = false;
     else user_firmware = true;
+#endif
+}
+
+static char check_magic_value(void)
+{
+#if !defined(_PIC14E)
+    uint8_t inst[2];
+
+    /* Look for the usercode-is-build-for-bootloader flag.
+       If flash location PROG_REGION_START + 0x10 contains 0x4321,
+       we now the usercode is bootloader-ready. */
+    EECON1 = 0x80;
+    TBLPTR = PROG_REGION_START + 0x10;
+    __asm("TBLRDPOSTINC");
+    inst[0] = TABLAT;
+    __asm("TBLRDPOSTINC");
+    inst[1] = TABLAT;
+
+    if(*((uint16_t*)inst) == 0x4321) {
+        return 1;
+    }
+    else {
+        return 0;
+    }
 #endif
 }
 

@@ -285,7 +285,7 @@
 
 // CONFIG1H
 #if (XTAL_USED == NO_XTAL)
-#pragma config CPUDIV = OSC2_PLL2
+#pragma config CPUDIV = OSC1
 #else
 #pragma config CPUDIV = OSC1    // CPU System Clock Postscaler (No CPU system clock divide)
 #endif
@@ -293,7 +293,7 @@
 
 // CONFIG2L
 #if (XTAL_USED == NO_XTAL)
-#pragma config OSC = INTOSCPLLO
+#pragma config OSC = INTOSCPLL
 #else
 #pragma config OSC = HSPLL      // Oscillator (HS+PLL, USB-HS+PLL)
 #endif

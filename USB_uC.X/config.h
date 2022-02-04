@@ -47,6 +47,8 @@
 #define _XTAL_FREQ          48000000      // Don't modify.
 #define PLL_STARTUP_DELAY() __delay_ms(3) // Don't modify.
 
+#define START_WATCHDOG  // Uncomment to start watchdog. Usercode _must_ clear the watchdog!
+
 // PIC16F145X Settings:
 #if defined(_PIC14E)
 #define DM164127 0 // Compatible with DM164127-2/DV164139-2 https://www.microchip.com/developmenttools/ProductDetails/PartNO/DM164127-2.
